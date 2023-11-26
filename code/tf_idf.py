@@ -9,6 +9,8 @@ import re
 import logging
 import argparse
 
+# example call: 
+# python tf_idf.py -f ../data/clean_data.csv -o ../data/laws_dataframe.csv -l law_text -k Keywords
 
 def clean_text(text):
     """
@@ -66,7 +68,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--file', required=True, help='file to read in')
     parser.add_argument('-o', '--outputDir', required=True, help='directory to save final dataframe to')
     parser.add_argument('-l', '--law_column', required=True, help='column of law text')
-    parser.add_argument('-k', '--keyword_column', required=True, help='column of existing keywords')
+    parser.add_argument('-k', '--keyword_columns', required=True, help='column of existing keywords')
     args = parser.parse_args()
     logging.info('reading in the data')
     df = pd.read_csv(args.file)
@@ -81,11 +83,15 @@ if __name__ == '__main__':
     feature_names = vectorizer.get_feature_names_out() 
     result = []
     logging.info('getting keywords for each individual doc')
-    for doc in corpora[0:10]:
+    for doc in corpora:
         df_temp = {}
         df_temp['full_text'] = doc
         df_temp['top_keywords'] = get_keywords(vectorizer, feature_names, doc)
         result.append(df_temp)
+    result = pd.DataFrame(result)
+    #only keep the columns i want: law_title, law_text, location, keywords 
+    df = df[['law_title', 'law_text', 'location']]
+    #adding to original data: 
+    df['keywords'] = result['top_keywords']     
     logging.info(f'saving the results to {args.outputDir}')   
-    final = pd.DataFrame(result)
-    pd.to_csv(args.outputDir)
+    df.to_csv(args.outputDir)
