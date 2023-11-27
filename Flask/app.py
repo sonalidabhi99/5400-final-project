@@ -34,9 +34,7 @@ class Todo(db.Model): # Define a Todo model for the SQLAlchemy ORM
 @app.route('/', methods=['POST', 'GET']) # Define the index route, which supports both POST and GET methods
 def index():
     if request.method == 'POST': # If the method is POST, add a new task
-        # MULTIPLE CHOICE QUESTION??
-        
-
+        # MULTIPLE CHOICE QUESTION??        
 
         task_content = request.form['content'] # Retrieve the task content from the form data
         # retrieve the summary of the task content
