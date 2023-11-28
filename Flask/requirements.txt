@@ -17,3 +17,5 @@ matplotlib
 numpy
 torch
 scikit-learn
+csv
+flask_migrate

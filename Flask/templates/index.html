@@ -36,5 +36,24 @@
             <input type="submit" value="Add Task">
         </form>
     </div>
+
+
+    <body>
+        <h1>Multiple Select Question</h1>
+        <form method="POST">
+            <label for="options">Select one or more options:</label>
+            <br>
+            <select name="options" id="options" multiple>
+                {% for keyword in keywords %}
+                    <option value="{{ keyword }}">{{ keyword }}</option>
+                {% endfor %}
+            </select>
+            <br>
+            <input type="submit" value="Submit">
+        </form>
+    </body>
+
+
+
 </div>
 {% endblock %}
