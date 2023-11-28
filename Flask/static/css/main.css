@@ -6,7 +6,7 @@ body, html {
 
 .content {
     margin: 0 auto;
-    width: 400px;
+    width: 1000px;
 }
 
 table, td, th {
@@ -31,6 +31,26 @@ td {
     margin-top: 20px;
 }
 
-#content {
-    width: 70%;
+.bubble-option {
+    display: inline-block;
+    margin: 10px; /* Increased margin for more space */
+    padding: 10px;
+    border: 2px solid #000;
+    border-radius: 15px; /* Rounded borders */
+    background-color: #f0f0f0;
 }
+
+.bubble-option input[type="checkbox"] {
+    display: none; /* Hide the default checkbox */
+}
+
+.bubble-option:hover {
+    background-color: #e0e0e0;
+    cursor: pointer;
+}
+
+/* Style for checked state */
+.bubble-option input[type="checkbox"]:checked + span {
+    background-color: #d0d0d0;
+}
+

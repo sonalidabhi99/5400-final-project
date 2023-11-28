@@ -28,30 +28,48 @@
             </tr>
         {% endfor %}
     </table>
-    {% endif %}
-
-    <div class="form">
-        <form action="/" method="POST">
-            <input type="text" name="content" id="content">
-            <input type="submit" value="Add Task">
-        </form>
-    </div>
-
 
     <body>
-        <h1>Multiple Select Question</h1>
+        {{ outputs }}
+    </body>
+
+    {% endif %}
+
+    <body>
+        <h1>Survey Questions</h1>
         <form method="POST">
-            <label for="options">Select one or more options:</label>
+            <label for="content">What seems to be the issue?</label>
             <br>
-            <select name="options" id="options" multiple>
-                {% for keyword in keywords %}
-                    <option value="{{ keyword }}">{{ keyword }}</option>
+            <input type="text" name="content" id="content">
+            <br><br>
+            <!-- First Question -->
+            <label for="location">Where do you live?</label>
+            <br>
+            <select name="location" id="location" multiple>
+                {% for state in states %}
+                    <option value="{{ state }}">{{ state }}</option>
                 {% endfor %}
             </select>
+            <br><br> <!-- Added a line break for spacing -->
+    
+            <!-- Second Question -->
+            <label for="options">Select all keywords from the below list that relate to your concern:</label>
             <br>
+            <div id="options">
+                {% for keyword in keywords %}
+                    <label class="bubble-option">
+                        <input type="checkbox" name="options" value="{{ keyword }}">
+                        {{ keyword }}
+                    </label>
+                {% endfor %}
+            </div>
+            <br><br> <!-- Added a line break for spacing -->
+    
+            <!-- Single Submit Button -->
             <input type="submit" value="Submit">
         </form>
     </body>
+        
 
 
 
