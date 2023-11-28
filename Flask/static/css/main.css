@@ -51,6 +51,14 @@ td {
 
 /* Style for checked state */
 .bubble-option input[type="checkbox"]:checked + span {
-    background-color: #d0d0d0;
+    display: inline-block;
+    margin: 10px;
+    padding: 10px; /* Maintain padding from .bubble-option */
+    border: 2px solid #000;
+    border-radius: 15px; /* Rounded borders */
+    background-color: #5A5A5A; /* Darker color when checked */
+    border-radius: 15px; /* To maintain the rounded corners */
 }
+
+
 

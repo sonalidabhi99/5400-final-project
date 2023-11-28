@@ -16,8 +16,10 @@ from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 from sklearn.preprocessing import MinMaxScaler
 from umap import UMAP
 from flask_migrate import Migrate
+from flask import session
 
 app = Flask(__name__) # Initialize a Flask application
+app.secret_key = 'super_secret_key' # Set a secret key for the application
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db' # Configure the application to use SQLite database
 db = SQLAlchemy(app) # Initialize SQLAlchemy with the Flask app
 migrate = Migrate(app, db) # WHEN WE CHANGE THE DATABASE--UNCOMMENT THIS LINE ON THE FIRST RUN; Initialize Flask-Migrate with the Flask app and SQLAlchemy database
@@ -99,100 +101,95 @@ def index():
         # Get the selected options and locations from the form
         selected_options = request.form.getlist('options')
         location_selected = request.form.getlist('location')
-
-        # Filter the database based on selected options and locations
-        # Assuming Law.location is the column for location in the Law model
-        laws = Law.query.with_entities(Law.law_text).filter(
-            and_(
-                Law.keywords.like(f'%{selected_options}%'),
-                Law.location.in_(location_selected)
-            )
-        ).all()
-
-        law_titles = Law.query.with_entities(Law.law_title).filter(
-            and_(
-                Law.keywords.like(f'%{selected_options}%'),
-                Law.location.in_(location_selected)
-            )
-        ).all()
-
-
         task_content = request.form['content'] # Retrieve the task content from the form data
         # retrieve the summary of the task content
         summarizer = pipeline("summarization") # load the model
         content_summary_from_model = summarizer(task_content, min_length=10, max_length=25,
            clean_up_tokenization_spaces=True)[0]['summary_text']
         new_task = Todo(content=task_content, content_summary=content_summary_from_model) # Create a new Todo object with the task content
-        new_law_query = Output(law_titles_included=law_titles, laws_summary=laws) 
+        # new_law_query = Output(law_titles_included=law_titles, laws_summary=laws) 
+        session['content'] = task_content
+        session['location'] = location_selected
+        session['options'] = selected_options
         try:
-            db.session.add(new_task) # Add the new task to the database session and commit
-            db.session.commit()
+            
+            #db.session.add(new_task) # Add the new task to the database session and commit
+            #db.session.commit()
             # add the new law query to the database session and commit
-            db.session.add(new_law_query) # Add the new task to the database session and commit
-            db.session.commit()
-            return redirect('/') # Redirect to the home page after adding the task
+            # db.session.add(new_law_query) # Add the new task to the database session and commit
+            #db.session.commit()
+            #return redirect('/') # Redirect to the home page after adding the task
+            return redirect('/response')
         except:
             return 'There was an issue adding your task' # Return an error message if there's an issue adding the task
 
     else: # If the method is GET, display current tasks
         #tasks = Todo.query.order_by(Todo.date_created).all() # Query the database for all tasks, ordered by creation date
         tasks = Todo.query.all()
-        outputs = Output.query.all()
-        return render_template('index.html', tasks=tasks, keywords=keywords_for_mult_select, states=locations_for_mult_select, outputs=outputs) # Render the index template with the list of tasks
+        #outputs = Output.query.all()
+        return render_template('index.html', tasks=tasks, keywords=keywords_for_mult_select, states=locations_for_mult_select) # Render the index template with the list of tasks
 
 
-@app.route('/delete/<int:id>') # Define the delete route for a task, identified by its id
-def delete(id):
-    task_to_delete = Todo.query.get_or_404(id) # Retrieve the task by id or return 404 if not found
+@app.route('/response')
+def response():
+    content = session.get('content', 'No content')
+    location = session.get('location', [])
+    options = session.get('options', [])
+    return render_template('response.html', content=content, location=location, options=options)
 
-    try:
-        db.session.delete(task_to_delete) # Delete the task from the database and commit the change
-        db.session.commit()
-        return redirect('/') # Redirect to the home page after deletion
-    except:
-        return 'There was a problem deleting that task' # Return an error message if there's a problem deleting the task
 
-@app.route('/update/<int:id>', methods=['GET', 'POST']) # Define the update route for a task, supporting both GET and POST methods
-def update(id):
-    task = Todo.query.get_or_404(id) # Retrieve the task by id or return 404 if not found
+# @app.route('/delete/<int:id>') # Define the delete route for a task, identified by its id
+# def delete(id):
+#     task_to_delete = Todo.query.get_or_404(id) # Retrieve the task by id or return 404 if not found
 
-    if request.method == 'POST': # If the method is POST, update the task
-        from sqlalchemy import and_
+#     try:
+#         db.session.delete(task_to_delete) # Delete the task from the database and commit the change
+#         db.session.commit()
+#         return redirect('/') # Redirect to the home page after deletion
+#     except:
+#         return 'There was a problem deleting that task' # Return an error message if there's a problem deleting the task
 
-        # Get the selected options and locations from the form
-        selected_options = request.form.getlist('options')
-        location_selected = request.form.getlist('location')
+# @app.route('/update/<int:id>', methods=['GET', 'POST']) # Define the update route for a task, supporting both GET and POST methods
+# def update(id):
+#     task = Todo.query.get_or_404(id) # Retrieve the task by id or return 404 if not found
 
-        # Filter the database based on selected options and locations
-        # Assuming Law.location is the column for location in the Law model
-        laws = Law.query.with_entities(Law.law_text).filter(
-            and_(
-                Law.keywords.like(f'%{selected_options}%'),
-                Law.location.in_(location_selected)
-            )
-        ).all()
+#     if request.method == 'POST': # If the method is POST, update the task
+#         from sqlalchemy import and_
 
-        law_titles = Law.query.with_entities(Law.law_title).filter(
-            and_(
-                Law.keywords.like(f'%{selected_options}%'),
-                Law.location.in_(location_selected)
-            )
-        ).all()
+#         # Get the selected options and locations from the form
+#         selected_options = request.form.getlist('options')
+#         location_selected = request.form.getlist('location')
 
-        task.content = request.form['content'] # Update the task content with the form data
-        # update the summary of the task content
-        summarizer = pipeline("summarization")
-        content_summary_from_model = summarizer(task.content, min_length=100, max_length=300,
-           clean_up_tokenization_spaces=True)[0]['summary_text']
-        task.content_summary = content_summary_from_model
-        try:
-            db.session.commit() # Commit the updates to the database
-            return redirect('/') # Redirect to the home page after updating the task
-        except:
-            return 'There was an issue updating your task' # Return an error message if there's an issue updating the task
+#         # Filter the database based on selected options and locations
+#         # Assuming Law.location is the column for location in the Law model
+#         laws = Law.query.with_entities(Law.law_text).filter(
+#             and_(
+#                 Law.keywords.like(f'%{selected_options}%'),
+#                 Law.location.in_(location_selected)
+#             )
+#         ).all()
 
-    else:
-        return render_template('update.html', task=task, content_summary=content_summary_from_model, laws=laws, law_titles=law_titles) # If the method is GET, render the update template with the task data
+#         law_titles = Law.query.with_entities(Law.law_title).filter(
+#             and_(
+#                 Law.keywords.like(f'%{selected_options}%'),
+#                 Law.location.in_(location_selected)
+#             )
+#         ).all()
+
+#         task.content = request.form['content'] # Update the task content with the form data
+#         # update the summary of the task content
+#         summarizer = pipeline("summarization")
+#         content_summary_from_model = summarizer(task.content, min_length=100, max_length=300,
+#            clean_up_tokenization_spaces=True)[0]['summary_text']
+#         task.content_summary = content_summary_from_model
+#         try:
+#             db.session.commit() # Commit the updates to the database
+#             return redirect('/') # Redirect to the home page after updating the task
+#         except:
+#             return 'There was an issue updating your task' # Return an error message if there's an issue updating the task
+
+#     else:
+#         return render_template('update.html', task=task, content_summary=content_summary_from_model, laws=laws, law_titles=law_titles) # If the method is GET, render the update template with the task data
 
 
 if __name__ == "__main__": # Conditional to ensure the script runs only if it is the main program

@@ -59,7 +59,7 @@
                 {% for keyword in keywords %}
                     <label class="bubble-option">
                         <input type="checkbox" name="options" value="{{ keyword }}">
-                        {{ keyword }}
+                        <span>{{ keyword }}</span> <!-- Add this span -->
                     </label>
                 {% endfor %}
             </div>
@@ -68,6 +68,9 @@
             <!-- Single Submit Button -->
             <input type="submit" value="Submit">
         </form>
+    
+
+        
     </body>
         
 
