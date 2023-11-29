@@ -58,6 +58,7 @@
         padding: 10px;
         border-radius: 2px;
       }
+  
       #tidbit {
         position: absolute;
         bottom: 0;
@@ -71,6 +72,7 @@
         margin-top: 60px;
         border: 1px solid green;
       }
+      
     </style>
   </head>
   <body>
@@ -100,31 +102,37 @@
               name="msg"
               placeholder="Enter text to summarize"
             />
-          </div> 
         </div>
-        <script>
+        
+<script>
   function handleUserInput() {
-    var rawText = $("#textInput").val();
-    var userHtml = '<p class="userText"><span>' + rawText + "</span></p>";
-    $("#textInput").val("");
-    $("#chatbox").append(userHtml);
-    document.getElementById("userInput").scrollIntoView({ block: "start", behavior: "smooth" });
+  var rawText = $("#textInput").val();
+  var userHtml = '<p class="userText"><span>' + rawText + "</span></p>";
+  var loadingHtml = '<div id="loading"><p>Loading...</p></span></div>';
 
-    // Send every input to the summarization endpoint
-    $.ajax({
-      type: "POST",
-      url: "/summarize",
-      data: { text: rawText },
-      success: function(data) {
-        var summaryHtml = '<p class="botText"><span>' + data.summary + "</span></p>";
-        $("#chatbox").append(summaryHtml);
-        document.getElementById("userInput").scrollIntoView({ block: "start", behavior: "smooth" });
-      },
-      error: function(error) {
-        console.error('Error:', error);
-      }
-    });
-  }
+  $("#textInput").val("");
+  $("#chatbox").append(userHtml);
+  $("#chatbox").append(loadingHtml);
+  document.getElementById("userInput").scrollIntoView({ block: "start", behavior: "smooth" });
+
+  // Send the input to the server
+  $.ajax({
+    type: "POST",
+    url: "/summarize",
+    data: { text: rawText },
+    success: function(data) {
+      $("#loading").remove();
+      var summaryHtml = '<p class="botText"><span>' + data.summary + "</span></p>";
+      $("#chatbox").append(summaryHtml);
+      document.getElementById("userInput").scrollIntoView({ block: "start", behavior: "smooth" });
+    },
+    error: function(error) {
+      $("#loading").remove();
+      console.error('Error:', error);
+    }
+  });
+}
+
 
   $("#textInput").keypress(function (e) {
     if (e.which == 13) {
