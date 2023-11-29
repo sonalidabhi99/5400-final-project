@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>LeTeRS-Bot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }s
+      /* Set height of body and the document to 100% */
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+        font-family: Arial;
+      }
+      #chatbox {
+        margin-left: auto;
+        margin-right: auto;
+        width: 40%;
+        margin-top: 60px;
+      }
+      #userInput {
+        margin-left: auto;
+        margin-right: auto;
+        width: 40%;
+        margin-top: 60px;
+      }
+      #textInput {
+        width: 90%;
+        border: none;
+        border-bottom: 3px solid black;
+        font-family: monospace;
+        font-size: 17px;
+      }
+      .userText {
+        color: white;
+        font-family: monospace;
+        font-size: 17px;
+        text-align: right;
+        line-height: 30px;
+      }
+      .userText span {
+        background-color: #808080;
+        padding: 10px;
+        border-radius: 2px;
+      }
+      .botText {
+        color: white;
+        font-family: monospace;
+        font-size: 17px;
+        text-align: left;
+        line-height: 30px;
+      }
+      .botText span {
+        background-color: #4169e1;
+        padding: 10px;
+        border-radius: 2px;
+      }
+      #tidbit {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 300px;
+      }
+      .boxed {
+        margin-left: auto;
+        margin-right: auto;
+        width: 78%;
+        margin-top: 60px;
+        border: 1px solid green;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+     <p align="center">
+        <img
+          src="static\\chatbot2.png"
+          alt="Python-BOT"
+          height="310"
+          width="1370"
+        />
+      </p>
+      <h1 align="center">
+        <b>Legal Tenants' Rights Summarizer</b>
+      </h1>
+      <div class="boxed">
+        <div>
+          <div id="chatbox">
+            <p class="botText">
+              <span>Hi! I'm your Tenants' Right Helper Chatbot</span>
+            </p>
+          </div>
+          <div id="userInput">
+            <input
+              id="textInput"
+              type="text"
+              name="msg"
+              placeholder="Enter text to summarize"
+            />
+          </div> 
+        </div>
+        <script>
+  function handleUserInput() {
+    var rawText = $("#textInput").val();
+    var userHtml = '<p class="userText"><span>' + rawText + "</span></p>";
+    $("#textInput").val("");
+    $("#chatbox").append(userHtml);
+    document.getElementById("userInput").scrollIntoView({ block: "start", behavior: "smooth" });
+
+    // Send every input to the summarization endpoint
+    $.ajax({
+      type: "POST",
+      url: "/summarize",
+      data: { text: rawText },
+      success: function(data) {
+        var summaryHtml = '<p class="botText"><span>' + data.summary + "</span></p>";
+        $("#chatbox").append(summaryHtml);
+        document.getElementById("userInput").scrollIntoView({ block: "start", behavior: "smooth" });
+      },
+      error: function(error) {
+        console.error('Error:', error);
+      }
+    });
+  }
+
+  $("#textInput").keypress(function (e) {
+    if (e.which == 13) {
+      handleUserInput();
+    }
+  });
+</script>
+      </div>
+    </div>
+  </body>
+</html>
