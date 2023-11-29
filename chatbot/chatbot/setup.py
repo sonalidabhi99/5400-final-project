@@ -4,11 +4,11 @@ with open('README.md', 'r') as f:
     long_description = f.read()
 
 setuptools.setup(
-name='name_matcher',
+name='LeTeRS',
 version='0.0.1',
 author='Tereza Martinkova',
 author_email='tm1450@georgetown.edu',
-description='homework4',
+description='final project',
 long_description=long_description,
 long_description_content_type='text/markdown',
 packages=setuptools.find_packages(),
