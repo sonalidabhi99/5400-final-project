@@ -1,0 +1,24 @@
+name: dsan5400
+channels:
+  - apple
+  - conda-forge
+dependencies:
+  - datasets
+  - jupyterlab
+  - more-itertools
+  - nltk
+  - numpy
+  - pydantic
+  - pytorch
+  - pyyaml
+  - pip
+  - pytest
+  - python
+  - jupyter
+  - tqdm
+  - transformers
+  - spacy
+  - scipy
+  - scikit-learn
+  - pandas
+  - matplotlib
