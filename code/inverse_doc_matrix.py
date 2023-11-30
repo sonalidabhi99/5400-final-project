@@ -102,6 +102,9 @@ def find_most_similar_law(location, user_text, inverse_document_matrix):
             else:
                 user_df[keyword] = 0
     
+    # check if all zeroes in user_df
+    if user_df.iloc[:, 4:].sum().sum() == 0:
+        return 'No similar law found--please revise your query'
 
     dictionary_of_arrays = {}
     for l in filtered_idm['law_title']:
@@ -119,9 +122,10 @@ def find_most_similar_law(location, user_text, inverse_document_matrix):
     
 
 create_idm("./data/clean_data.csv")
-print(clean_text("'my money is in the bank and i can't get it out'"))
-print(find_most_similar_law('VA', "'my money is in the bank and i can't get it out'", create_idm("./data/clean_data.csv")))
+print(clean_text("'hi'"))
+print(find_most_similar_law('VA', "'I am having trouble with mold'", create_idm("./data/clean_data.csv")))
 
 # I am having trouble with mold and no air conditioning and no heat. I hate my landlord!!!
 # my money is in the bank and i cant get it out
-# I am having trouble with mold and no air conditioning and no heat. I hate my landlord!!!
+# I am having trouble with mold 
+# hi
