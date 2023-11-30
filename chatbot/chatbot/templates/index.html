@@ -102,43 +102,90 @@
               name="msg"
               placeholder="Enter text to summarize"
             />
+          <div id="loading" style="display: none;">
+            <p>Loading...</p>
+          </div>
         </div>
         
 <script>
-  function handleUserInput() {
-  var rawText = $("#textInput").val();
-  var userHtml = '<p class="userText"><span>' + rawText + "</span></p>";
-  var loadingHtml = '<div id="loading"><p>Loading...</p></span></div>';
+  var converstationPoint = 'askLocation';
+  var input1, input2;
 
-  $("#textInput").val("");
-  $("#chatbox").append(userHtml);
-  $("#chatbox").append(loadingHtml);
-  document.getElementById("userInput").scrollIntoView({ block: "start", behavior: "smooth" });
-
-  // Send the input to the server
-  $.ajax({
-    type: "POST",
-    url: "/summarize",
-    data: { text: rawText },
-    success: function(data) {
-      $("#loading").remove();
-      var summaryHtml = '<p class="botText"><span>' + data.summary + "</span></p>";
-      $("#chatbox").append(summaryHtml);
-      document.getElementById("userInput").scrollIntoView({ block: "start", behavior: "smooth" });
-    },
-    error: function(error) {
-      $("#loading").remove();
-      console.error('Error:', error);
-    }
+  $(document).ready(function() {
+    showFirstQuestion();
   });
+
+  function showFirstQuestion() {
+    var firstQuestionHtml = '<p class="botText"><span>What state are you located in?</span></p>' +
+                            '<button onclick="handleChoice(\'MD\')">MD</button>' +
+                            '<button onclick="handleChoice(\'VA\')">VA</button>' +
+                            '<button onclick="handleChoice(\'DC\')">DC</button>';
+    $("#chatbox").append(firstQuestionHtml);
 }
 
+  function handleChoice(choice) {
+    input1 = choice;
+    var userHtml = '<p class="userText"><span>' + choice + "</span></p>";
+    $("#chatbox").append(userHtml);
+    conversationPoint = "askIssue";
+
+    var botMessage = "What issue can I assist you with?";
+    var botHtml = '<p class="botText"><span>' + botMessage + "</span></p>";
+    $("#chatbox").append(botHtml);
+}
+
+  function handleUserInput() {
+    var rawText = $("#textInput").val();
+    var userHtml = '<p class="userText"><span>' + rawText + "</span></p>";
+    $("#textInput").val("");
+    $("#chatbox").append(userHtml);
+
+    if (conversationPoint === "askIssue") {
+        input2 = rawText;
+        summarizeText(input2);
+    } else if (conversationPoint === 'restartPrompt') {
+      if (rawText === 'yes') {
+        // Reset the conversation
+        conversationPoint = 'askLocation';
+        showFirstQuestion();
+      } else if (rawText === 'no') {
+        // End the conversation
+        var goodbyeMessage = '<p class="botText"><span>Go forth and stick it to your landlord now! Good Luck!</span></p>';
+        $("#chatbox").append(goodbyeMessage);
+        conversationPoint = 'ended';
+    }
+  }
+}
+
+  function summarizeText(text) {
+    $("#loading").show();
+    $.ajax({
+      type: "POST",
+      url: "/summarize",
+      data: { text: text },
+      success: function(data) {
+        var summaryHtml = '<p class="botText"><span>' + data.summary + '</span></p>';
+        $("#chatbox").append(summaryHtml);
+        $("#loading").hide();
+      var restartQuestionHtml = '<p class="botText"><span>Do you want to begin again? (yes/no)</span></p>';
+      $("#chatbox").append(restartQuestionHtml);
+
+    conversationPoint = 'restartPrompt';
+        // Here, ask if the user wants to start over or conclude
+      },
+      error: function(error) {
+        $("#loading").hide();
+        console.error('Error:', error);
+      }
+    });
+  }
 
   $("#textInput").keypress(function (e) {
     if (e.which == 13) {
       handleUserInput();
     }
   });
+
 </script>
       </div>
     </div>
