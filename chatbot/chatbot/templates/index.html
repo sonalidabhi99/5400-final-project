@@ -132,23 +132,26 @@
     var botMessage = "What issue can I assist you with?";
     var botHtml = '<p class="botText"><span>' + botMessage + "</span></p>";
     $("#chatbox").append(botHtml);
+    $("#textInput").focus();
 }
 
   function handleUserInput() {
     var rawText = $("#textInput").val();
-    var userHtml = '<p class="userText"><span>' + rawText + "</span></p>";
     $("#textInput").val("");
+    var userHtml = '<p class="userText"><span>' + rawText + "</span></p>";
     $("#chatbox").append(userHtml);
 
     if (conversationPoint === "askIssue") {
         input2 = rawText;
-        summarizeText(input2);
+        converstationPoint == 'processing';
+        summarizeText(rawText);
+
     } else if (conversationPoint === 'restartPrompt') {
-      if (rawText === 'yes') {
+      if (rawText.toLowerCase() === 'yes') {
         // Reset the conversation
-        conversationPoint = 'askLocation';
+        $("#chatbox").html(''); // Clear the chatbox
         showFirstQuestion();
-      } else if (rawText === 'no') {
+      } else if (rawText.toLowerCase() === 'no') {
         // End the conversation
         var goodbyeMessage = '<p class="botText"><span>Go forth and stick it to your landlord now! Good Luck!</span></p>';
         $("#chatbox").append(goodbyeMessage);
@@ -161,16 +164,15 @@
     $("#loading").show();
     $.ajax({
       type: "POST",
-      url: "/summarize",
-      data: { text: text },
-      success: function(data) {
-        var summaryHtml = '<p class="botText"><span>' + data.summary + '</span></p>';
-        $("#chatbox").append(summaryHtml);
+      url: "/process_input",
+      data: { input1: input1, input2: text },
+      success: function(response) {
         $("#loading").hide();
-      var restartQuestionHtml = '<p class="botText"><span>Do you want to begin again? (yes/no)</span></p>';
-      $("#chatbox").append(restartQuestionHtml);
-
-    conversationPoint = 'restartPrompt';
+        var responseHtml = '<p class="botText"><span>' + response.most_similar_law + '<br>' + response.summary + '</span></p>';
+        $("#chatbox").append(responseHtml);
+        var restartQuestionHtml = '<p class="botText"><span>Do you want to begin again? (yes/no)</span></p>';
+        $("#chatbox").append(restartQuestionHtml);
+        conversationPoint = 'restartPrompt';
         // Here, ask if the user wants to start over or conclude
       },
       error: function(error) {
@@ -181,7 +183,7 @@
   }
 
   $("#textInput").keypress(function (e) {
-    if (e.which == 13) {
+    if (e.which == 13 && conversationPoint !== 'ended') {
       handleUserInput();
     }
   });

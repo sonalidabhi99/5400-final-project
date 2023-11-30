@@ -118,7 +118,7 @@ def find_most_similar_law(location, user_text, inverse_document_matrix):
     return most_similar_law
     
 
-create_idm("./data/clean_data.csv")
+create_idm("../data/clean_data.csv")
 print(clean_text("'my money is in the bank and i can't get it out'"))
 print(find_most_similar_law('VA', "'my money is in the bank and i can't get it out'", create_idm("./data/clean_data.csv")))
 
