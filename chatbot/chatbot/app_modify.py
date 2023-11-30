@@ -1,6 +1,5 @@
 #import packages
 from flask import Flask, render_template, request, jsonify
-import openai
 from transformers import PegasusForConditionalGeneration, PegasusTokenizer
 import torch
 import pandas as pd
@@ -18,34 +17,37 @@ warnings.filterwarnings('ignore')
 app = Flask(__name__)
 #add API Key
 
-
 #set up pretrained summarization model using Pegasus
 model_name = "google/pegasus-xsum" #model created by Google
 tokenizer = PegasusTokenizer.from_pretrained(model_name) #initiate tokenizer
 device = "cuda" if torch.cuda.is_available() else "cpu" #use GPU where available
 model = PegasusForConditionalGeneration.from_pretrained(model_name).to(device) #load the model
 
-def get_completion(prompt, model=model_name):
+#set up pretrained summarization model using Pegasus
+def get_completion(prompt, model_peg="google/pegasus-xsum"):
     # function to get reponses in the chat
-    messages = [{"role": "user", "content": prompt}]
-    response = openai.ChatCompletion.create(
-        model=model,
-        messages=messages,
-        temperature=0, # creating deterministic model
-    )
-    return response.choices[0].message["content"]
+    tokenizer = PegasusTokenizer.from_pretrained(model_peg) #initiate tokenizer
+    device = "cuda" if torch.cuda.is_available() else "cpu" #use GPU where available
+    model = PegasusForConditionalGeneration.from_pretrained(model_peg).to(device) #load the model
+    input_text = "summarize: " + prompt
+    tokenized_text = tokenizer.encode(input_text, return_tensors='pt', max_length=512).to(device)
+    summary_ = model.generate(tokenized_text, min_length=30, max_length=300)
+    summary = tokenizer.decode(summary_[0], skip_special_tokens=True)
+
+    return summary
+    
 
 
 # READ IN THE DATA
 def create_idm(csv_path):
     df = pd.read_csv(csv_path)
     # drop all rows with NaN values for Keywords
-    df = df.dropna(subset=['Keywords'])
+    df = df.dropna(subset=['keywords'])
     # drop all columns except for law_title, law_text, state, and keywords
-    df = df[['law_title', 'law_text', 'location', 'Keywords']]
+    df = df[['law_id','law_title', 'law_text', 'location', 'keywords']]
     keywords_for_mult_select = []
     # create list of keywords
-    for k in df['Keywords']:
+    for k in df['keywords']:
         if type(k) == float:
             continue
         k = k.split(',')
@@ -56,7 +58,7 @@ def create_idm(csv_path):
             keywords_for_mult_select.append(l)
     keywords_for_mult_select = list(set(keywords_for_mult_select))
     keywords_for_mult_select.sort()
-    df = df[['location', 'law_title', 'law_text']]
+    df = df[['law_id','location', 'law_title', 'law_text']]
     # add blank columns for each keyword
     for keyword in keywords_for_mult_select:
         df[keyword] = np.nan
@@ -143,9 +145,10 @@ def find_most_similar_law(location, user_text, inverse_document_matrix):
     
 
     dictionary_of_arrays = {}
-    for l in filtered_idm['law_title']:
-        dictionary_of_arrays[l] = filtered_idm[filtered_idm['law_title'] == l].iloc[:, 4:].values
-
+    for l in filtered_idm['law_id']:
+        dictionary_of_arrays[l] = filtered_idm[filtered_idm['law_id'] == l].iloc[:, 4:].values
+    
+    print(dictionary_of_arrays)
     user_array = user_df.iloc[:, 4:].values
 
     dictionary_for_finding_similar_law = {}
@@ -156,6 +159,19 @@ def find_most_similar_law(location, user_text, inverse_document_matrix):
 
     return most_similar_law
 
+def get_law(most_similar_law):
+    """
+    params: most similar law 
+    returns: the text
+    """
+    df = pd.read_csv('../data/laws_dataframe.csv')
+    #find the text 
+    row = df.loc[df['law_id'] == most_similar_law]
+    text = row['law_text']
+    title = row['law_title']
+
+    return text, title
+
 @app.route("/")
 def home():  
     # define path to home page
@@ -165,7 +181,7 @@ def home():
 def get_bot_response():   
     # define path to model
     userText = request.args.get('msg') # get input
-    response = get_completion(userText) # get response  
+    response = summarize(userText) # get response  
     #return str(bot.get_response(userText)) 
     return response
 
@@ -185,15 +201,24 @@ def get_summary():
 def process_input():
     try:
         location = request.form.get('input1', '')
+        print(location)
         user_issue = request.form.get('input2', '')
+        print(user_issue)
         cleaned_text = clean_text(user_issue)
-        summary = summarize(cleaned_text)
-
+        print(cleaned_text)
         # Assuming create_idm returns the dataframe required for find_most_similar_law
-        idm = create_idm("../data/clean_data.csv")
-        most_similar_law = find_most_similar_law(location, cleaned_text, idm)
+        idm = create_idm('../data/laws_dataframe.csv')
+        #most_similar_law = find_most_similar_law(location, cleaned_text, idm)
+        #print(most_similar_law)
+        idx = find_most_similar_law(location, cleaned_text, idm)
+        law_text, law_title = get_law(idx)
+        print(law_text)
+        print(law_title)
+        summary = summarize(law_text)
+        print(summary)
 
-        return jsonify({"most_similar_law": most_similar_law, "summary": summary})
+        return jsonify({"most_similar_law": law_title, "summary": summary})
+    
     except Exception as e:
         print(e)  # log the exception for debugging
         return jsonify({"error": "An error occurred processing the inputs."}), 500
