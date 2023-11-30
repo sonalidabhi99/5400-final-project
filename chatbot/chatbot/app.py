@@ -16,7 +16,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu" #use GPU where available
 model = PegasusForConditionalGeneration.from_pretrained(model_name).to(device) #load the model
 
 def get_completion(prompt, model="gpt-3.5-turbo"):
-    # function to get repoinses in the chat
+    # function to get reponses in the chat
     messages = [{"role": "user", "content": prompt}]
     response = openai.ChatCompletion.create(
         model=model,
