@@ -37,4 +37,4 @@ The files that make up the summarization poriton of the application are listed b
 
 #### LeTeRS code flowchart
 
-![](data/images/dsan5400.drawio.png)
+![](images/dsan5400.drawio.png)
