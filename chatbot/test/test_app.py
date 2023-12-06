@@ -1,6 +1,6 @@
 #import the libraries
 #have to be in the test folder for this referecing to work 
-from ..functions.information_retrieval import *
+from ..chatbot.functions.information_retrieval import *
 if __name__ == "__main__":
 
     input1 = ['VA', 'MD', 'DC', 'NY'] #the state 
