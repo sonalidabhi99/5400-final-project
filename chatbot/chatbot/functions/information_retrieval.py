@@ -59,41 +59,23 @@ def find_most_similar_law(location, user_text):
             else:
                 user_df[keyword] = 0
     
-    print('#'*50)
-    print('cleaned user text: ', cleaned_user_text)
-
-    print('#'*50)
-    print('filtered inverse document matrix: ', filtered_idm)
-    
-    print('#'*50)
-    print('user_df: ', user_df)
     
     dictionary_of_arrays = {}
     for l in filtered_idm['law_id']:
         dictionary_of_arrays[l] = filtered_idm[filtered_idm['law_id'] == l].iloc[:, 5:].values
     
-    print('#'*50)
-    print('dictionary of arrays: ', dictionary_of_arrays)
 
     user_array = user_df.iloc[:, 5:].values
-    print('#'*50)
-    print('user array: ', user_array)
     dictionary_for_finding_similar_law = {}
 
-    try:
-        for law in dictionary_of_arrays:
-            dictionary_for_finding_similar_law[law] = cosine_similarity(dictionary_of_arrays[law], user_array)[0][0]
-    except:
-        print('IN DICT PART: no law found')
-    print('#'*50)
-    print('dictionary for finding similar law: ', dictionary_for_finding_similar_law)
 
-    try:
+    for law in dictionary_of_arrays:
+        dictionary_for_finding_similar_law[law] = cosine_similarity(dictionary_of_arrays[law], user_array)[0][0]
+
+    if len(dictionary_for_finding_similar_law) != 0:
         most_similar_law = max(dictionary_for_finding_similar_law, key=dictionary_for_finding_similar_law.get)
-    except:
-        most_similar_law = "IN MAX PART: no law found"
-
-    print('most similar law: ', most_similar_law)
+    else:
+        most_similar_law = "No Law Found"
 
     return most_similar_law
 

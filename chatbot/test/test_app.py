@@ -22,16 +22,15 @@ if __name__ == "__main__":
     # and all the titles. 
     # we want to make sure that the text and title are strings and msl is an idex, and that it's a correct
     # index
-
-    for q in msls:
-        print(q)
-
-    for i in range(len(msls)):
-        assert type(msls[i]) == int
-        assert msls[i] >= 0
-        assert msls[i] < 1000
-        assert type(final_texts[i]) == str
-        assert type(titles[i]) == str
+    
+    for i, msl in enumerate(msls):
+        #if its a string, its "No Law Found"
+        if type(msl) != str:
+            assert type(msl) == int
+            assert msl >= 0
+            assert msl < 1000
+            assert type(final_texts[i]) == str
+            assert type(titles[i]) == str
 
 
 
