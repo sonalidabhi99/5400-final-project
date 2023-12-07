@@ -50,10 +50,17 @@ The last function in the app.py is the process_input function, which we might re
 
 #### Information Retrieval
 
-The files that make up the information retrieval poriton of the application are listed below.
+The files that make up the information retrieval portion of the application are listed below (in order):
 
-- inverse_doc_matrix.py: this file creates an inverted matrix to find the most similar law to the user's prompt input and returns it.
-- string_matcher.py ?
+1. clean_text: this function takes in the user's input and cleans it by removing punctuation, making all letters lowercase, removing stop words, and lemmatizing the text. Importantly, this is the same function that is used to clean all of the laws in the database.
+2. find_most_similar_law: this function takes in the user's input and the cleaned text and returns the index of the most similar law to the user's input. The user input is compared to the laws in the database using cosine similarity, and the index of the law with the highest cosine similarity is returned.
+
+$$\text { similarity }=\cos (\theta)=\frac{\mathbf{A} \cdot \mathbf{B}}{\|\mathbf{A}\|\|\mathbf{B}\|}=\frac{\sum_{i=1}^n A_i B_i}{\sqrt{\sum_{i=1}^n A_i^2} \sqrt{\sum_{i=1}^n B_i^2}}$$
+
+
+3. get_law: this function takes in the index of the most similar law and returns the law text and law title.
+
+This component of the project is tested in the test_information_retrieval.py file. 
 
 #### Content Summarization
 
